@@ -1,0 +1,35 @@
+useLogging: True
+logging:
+  version: 1
+
+  formatters:
+    simple:
+      format: '%(message)s'
+
+  handlers:
+    console:
+      class: logging.StreamHandler
+      level: INFO
+      formatter: simple
+    file:
+      class: logging.FileHandler
+      filename: logging.log
+      level: INFO
+      formatter: simple
+
+  loggers:
+    StreamLogger:
+      handlers: [console]
+      level: INFO
+
+#    FileLogger:
+#      handlers: [console,file]
+#      level: INFO
+
+mysql:
+  user: awen
+  password: 123456
+  url: 114.213.213.163
+  port: 3306
+
+
