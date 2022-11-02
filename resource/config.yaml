@@ -28,13 +28,15 @@ logging:
 
 mysql:
   user: awen
-  password: 123456
+  password: '123456'
   host: 121.5.62.4
   port: 3306
-  database: DispatchDatabase
+  db: DispatchDatabase
   charset: utf8
   autocommit: True
   maxsize: 10
   minsize: 1
 
-
+neo4j:
+  user: neo4j
+  password: '123456'

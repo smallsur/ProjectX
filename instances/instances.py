@@ -1,9 +1,9 @@
 from .field import *
 from .orm import Model
 
+
 class Material(Model):
     __table__ = 'table_material'
-
 
     id = IntegerField('id', True)
     name = StringField('name', False)
@@ -22,6 +22,10 @@ class Material(Model):
     length_upper = FloatField('length_limit_upper', False)
     length_lower = FloatField('length_limit_lower', False)
 
-    
+
+class Truck(Model):
+    __table__ = 'table_truck'
 
 
+class Driver(Model):
+    __table__ = 'table_truck_driver'
