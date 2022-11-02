@@ -29,7 +29,12 @@ logging:
 mysql:
   user: awen
   password: 123456
-  url: 114.213.213.163
+  host: 121.5.62.4
   port: 3306
+  database: DispatchDatabase
+  charset: utf8
+  autocommit: True
+  maxsize: 10
+  minsize: 1
 
 
