@@ -8,7 +8,7 @@ import config
 TEXT_DB = {'url': 'mysql+pymysql://awen:123456@121.5.62.4/DispatchDatabase?charset=utf8mb4',
             'echo': True,
             'pool_size': 10,
-            'max_overflow': 10}
+            'max_overflow': 10, 'connect_args':{'connect_timeout': 10}}
 
 
 for k, v in TEXT_DB.items():
