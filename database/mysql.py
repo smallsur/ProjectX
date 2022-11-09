@@ -2,8 +2,9 @@ import pymysql
 import aiomysql
 import asyncio
 
-from config import cfg
+
 from utils import Log
+import config
 
 TEXT_DB = {"host": "114.213.213.163", "port": 3306, "user": "awen", "password": "123456",
            "db": "DispatchDatabase", 'charset': 'utf8', 'autocommit': True,
@@ -17,7 +18,7 @@ __pool = None
 async def get_pool():
     global __pool, __loop
 
-    config_mysql = getattr(cfg, 'mysql')
+    config_mysql = getattr(config.cfg, 'mysql')
 
     for k, v in TEXT_DB.items():
         if getattr(config_mysql, k, None) is not None:

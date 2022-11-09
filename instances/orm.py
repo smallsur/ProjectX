@@ -3,7 +3,6 @@ from database import execute_sql_task
 from .field import Field
 
 
-
 class ModelMetaclass(type):
     def __new__(cls, name, bases, attrs):
         # 排除Model类本身:

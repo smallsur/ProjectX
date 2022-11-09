@@ -1,6 +1,7 @@
 import functools
 import time
 
+
 def run_time(fn):
     @functools.wraps(fn)
     def wrapper(*args, **kw):

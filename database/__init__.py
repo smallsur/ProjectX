@@ -1,2 +1,1 @@
-from .mysql import *
-
+from .interface import get_all_district, create_or_update_district

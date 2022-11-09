@@ -38,5 +38,10 @@ mysql:
   minsize: 1
 
 neo4j:
-  user: neo4j
-  password: '123456'
+  DATABASE_URL: 'bolt://neo4j:zaw1219..@121.5.62.4:7687'
+
+sqlalchemy:
+  url: 'mysql+pymysql://awen:123456@121.5.62.4/DispatchDatabase?charset=utf8mb4'
+  echo: True
+  pool_size: 10
+  max_overflow: 10
