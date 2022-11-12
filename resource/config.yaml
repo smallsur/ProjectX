@@ -1,5 +1,6 @@
 useLogging: True
-
+logfile: 'logging.log'
+loglevel: 'DEBUG'
 mysql:
   user: awen
   password: '123456'
