@@ -2,8 +2,6 @@ import pymysql
 import aiomysql
 import asyncio
 
-
-from utils import Log
 import config
 
 TEXT_DB = {"host": "114.213.213.163", "port": 3306, "user": "awen", "password": "123456",
@@ -23,8 +21,6 @@ async def get_pool():
     for k, v in TEXT_DB.items():
         if getattr(config_mysql, k, None) is not None:
             TEXT_DB[k] = getattr(config_mysql, k)
-
-    Log.logInfo(level=0, message='initting the pool of mysql')
 
     __pool = await aiomysql.create_pool(**TEXT_DB, loop=__loop)
 

@@ -1,16 +1,17 @@
 from neomodel import (StructuredNode, StringProperty, IntegerProperty,
-                      UniqueIdProperty, RelationshipTo, RelationshipFrom)
+                      UniqueIdProperty, RelationshipTo, BooleanProperty)
 
 from .relationship_neo4j import Material_Include, Truck_Include
 
 
 # 物资表,一般属性存放在mysql
 class Material_Node(StructuredNode):
+
     id = UniqueIdProperty()
     material_id = IntegerProperty(unique_index=True, required=True, label='material_id')
 
     name = StringProperty(label='material_name')
-    num_unassign = IntegerProperty(label='num_unassign')
+    num_unssign = IntegerProperty(label='num_unssign')
     num_assign = IntegerProperty(label='num_assign')
 
     num_store = IntegerProperty(label='num_store')
@@ -43,6 +44,7 @@ class Reserve_Point_Node(StructuredNode):
 
     node_id = IntegerProperty(unique_index=True, label='node_id')
     name = StringProperty(label='reserve_point_name')
+    is_allocated = BooleanProperty(label='isis_allocated')
 
     include = RelationshipTo("Material_Node", "INCLUDE_MATERIAL", model=Material_Include)
 

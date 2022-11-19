@@ -22,6 +22,8 @@ class Material_Standard(ModelBase):
 
     fine_material = relationship('Material', back_populates='classification')
 
+    fine_truck = relationship('Truck', back_populates='material_standard')
+
 
 class Material(ModelBase):
     __tablename__ = 'table_material'
@@ -69,7 +71,6 @@ class District(ModelBase):
     reserve_point = relationship("Reserve_Point", back_populates='district')
 
     def __repr__(self):
-        # s = "%d,%s,%d,%s,%s,%s,%s,%s,%s,%s,%d"%(self.id,self.name,self.parent_id, self.initial,self.initials,self.pinyin,self.extra,self.suffix,self.code,self.area_code,self.order)
         return "District id:%d, name:%s " % (self.id, self.name)
 
 
@@ -113,8 +114,10 @@ class Truck(ModelBase):
     location = Column('location', String(length=255))
     register_location = Column('register_location', String(length=255))
     date_manufacture = Column('date_manufacture', DateTime)
+    code = Column('code', Integer, ForeignKey("table_material_standard.minor_category_code"))
 
     driver = relationship('Truck_Driver', back_populates='truck')
+    material_standard = relationship('Material_Standard', back_populates='fine_truck')
 
 
 class Truck_Driver(ModelBase):
