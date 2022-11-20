@@ -106,3 +106,7 @@ def crete_or_update_reserve_point():
 @db.transaction
 def create_or_update_material():
     pass
+
+@db.transaction
+def simulate_create_material():
+    pass
