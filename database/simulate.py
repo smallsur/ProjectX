@@ -20,14 +20,20 @@ _handler.setFormatter(logging.Formatter(get_log_format(thread_info=True)))
 _logger.addHandler(_handler)
 
 def getdistrict_by_name(name:str):
-    with get_session as s:
-        sql = District.
-        s.excute()
+    with get_session() as s:
+        sql = select(District).where(District.name==name)
+        rs = s.execute(sql).scalars().all()
+        print(rs)
+    if len(rs) > 0:
+        return rs[0]
+    return None
 
 
 @db.transaction
-def simulate_one_district():
-    pass
+def simulate_one_district(name:str):
+    district_main = getdistrict_by_name(name=name)
+    
+
 
 @db.transaction
 def simulate_one_reserve_point():

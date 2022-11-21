@@ -1,1 +1,12 @@
-process(73927) - thread(MainThread-139651525490496) - 2022-11-12 19:55:02,079 - root - INFO - <module> - wen
+process(45728) - thread(MainThread-52364) - 2022-11-21 11:00:52,044 - sqlalchemy.engine.Engine - INFO - _execute_context - SELECT DATABASE()
+process(45728) - thread(MainThread-52364) - 2022-11-21 11:00:52,045 - sqlalchemy.engine.Engine - INFO - _execute_context - [raw sql] {}
+process(45728) - thread(MainThread-52364) - 2022-11-21 11:00:52,055 - sqlalchemy.engine.Engine - INFO - _execute_context - SELECT @@sql_mode
+process(45728) - thread(MainThread-52364) - 2022-11-21 11:00:52,056 - sqlalchemy.engine.Engine - INFO - _execute_context - [raw sql] {}
+process(45728) - thread(MainThread-52364) - 2022-11-21 11:00:52,058 - sqlalchemy.engine.Engine - INFO - _execute_context - SELECT @@lower_case_table_names
+process(45728) - thread(MainThread-52364) - 2022-11-21 11:00:52,059 - sqlalchemy.engine.Engine - INFO - _execute_context - [raw sql] {}
+process(45728) - thread(MainThread-52364) - 2022-11-21 11:00:52,065 - sqlalchemy.engine.Engine - INFO - _begin_impl - BEGIN (implicit)
+process(45728) - thread(MainThread-52364) - 2022-11-21 11:00:52,100 - sqlalchemy.engine.Engine - INFO - _execute_context - SELECT table_district.id, table_district.name, table_district.parent_id, table_district.initial, table_district.initials, table_district.pinyin, table_district.extra, table_district.suffix, table_district.code, table_district.area_code, table_district.`order` 
+FROM table_district 
+WHERE table_district.name = %(name_1)s
+process(45728) - thread(MainThread-52364) - 2022-11-21 11:00:52,100 - sqlalchemy.engine.Engine - INFO - _execute_context - [generated in 0.00140s] {'name_1': 'ËÄ´¨'}
+process(45728) - thread(MainThread-52364) - 2022-11-21 11:00:52,114 - sqlalchemy.engine.Engine - INFO - _commit_impl - COMMIT

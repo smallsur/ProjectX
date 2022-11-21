@@ -13,10 +13,10 @@ mysql:
   minsize: 1
 
 neo4j:
-  DATABASE_URL: 'bolt://neo4j:zaw1219..@121.5.62.4:7687'
+  DATABASE_URL: 'bolt://neo4j:zaw1219..@114.213.213.163:7687'
 
 sqlalchemy:
-  url: 'mysql+pymysql://awen:123456@121.5.62.4/DispatchDatabase?charset=utf8mb4'
+  url: 'mysql+pymysql://awen:123456@114.213.213.163/DispatchDatabase?charset=utf8mb4'
   echo: True
   pool_size: 10
   max_overflow: 10

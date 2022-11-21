@@ -1,7 +1,7 @@
 import logging
 
 from database import create_or_update_district, create_or_update_district_include_rel
-
+from database import getdistrict_by_name
 from utils import get_log_format
 import config
 
@@ -14,4 +14,6 @@ if __name__ == "__main__":
     # create_or_update_district()
 
     # create_or_update_district_include_rel()
-    logging.info('wen')
+    # logging.info('wen')
+    d = getdistrict_by_name('四川')
+    print(d.name)
