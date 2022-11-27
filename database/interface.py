@@ -18,13 +18,13 @@ _handler.setFormatter(logging.Formatter(get_log_format(thread_info=True)))
 _logger.addHandler(_handler)
 
 
-def get_all_district() -> List[District]:
+def get_all_district():
     with get_session() as s:
         rs = s.query(District)
     return rs
 
 
-def get_all_reserve_point() -> List[Reserve_Point]:
+def get_all_reserve_point():
     with get_session() as s:
         rs = s.query(Reserve_Point)
     return rs
@@ -32,7 +32,7 @@ def get_all_reserve_point() -> List[Reserve_Point]:
 def get_all_material_standard() ->List[Material_Standard]:
     with get_session() as s:
         rs = s.query(Material_Standard)
-    return rs
+    return rs   # type: ignore
 
 @db.transaction
 def clear_graphdb():
