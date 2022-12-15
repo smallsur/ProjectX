@@ -1,7 +1,8 @@
 from neomodel import (StructuredNode, StringProperty, IntegerProperty,
-                      UniqueIdProperty, RelationshipTo, BooleanProperty)
+                      UniqueIdProperty, RelationshipTo, BooleanProperty, RelationshipFrom, 
+                      One, OneOrMore, ZeroOrMore, ZeroOrOne)
 
-from .relationship_neo4j import Material_Include, Truck_Include
+from .relationship_neo4j import Material_Reserved, Truck_Include
 
 
 # 物资表,一般属性存放在mysql
@@ -11,16 +12,19 @@ class Material_Node(StructuredNode):
     material_id = IntegerProperty(unique_index=True, required=True, label='material_id')
 
     name = StringProperty(label='material_name')
-    num_unssign = IntegerProperty(label='num_unssign')
-    num_assign = IntegerProperty(label='num_assign')
-
-    num_store = IntegerProperty(label='num_store')
+    
+    include_parent_material = RelationshipFrom('Material_Standard_Node', 'INCLUDE_MATERIAL', cardinality=ZeroOrOne)
 
 
-class Truck_Node(StructuredNode):
+class Material_Standard_Node(StructuredNode):
     id = UniqueIdProperty()
+    material_standard_id = IntegerProperty(unique_index=True, required=True, label='material_standard_id')
+    name = StringProperty(label='material_stanard_name')
 
-    license = StringProperty(unique_index=True, required=True, label='licence')
+    include_material = RelationshipTo('Material_Node', 'INCLUDE_MATERIAL', cardinality=ZeroOrMore)
+
+    include_parent_material = RelationshipFrom('Material_Standard_Node', 'INCLUDE_STANDRAD_MATERIAL', cardinality=ZeroOrOne)
+    include_standard_material = RelationshipTo('Material_Standard_Node', 'INCLUDE_STANDRAD_MATERIAL', cardinality=ZeroOrMore)
 
 
 class District_Node(StructuredNode):
@@ -30,7 +34,9 @@ class District_Node(StructuredNode):
 
     name = StringProperty(label='location_name')
 
-    suffix = StringProperty(label='suffix')
+    level = StringProperty(label='level')
+
+    center = StringProperty(lebel='center')
 
     parent_id = IntegerProperty(required=True, label='parent_id')
 
@@ -44,8 +50,18 @@ class Reserve_Point_Node(StructuredNode):
 
     node_id = IntegerProperty(unique_index=True, label='node_id')
     name = StringProperty(label='reserve_point_name')
-    is_allocated = BooleanProperty(label='isis_allocated')
+    is_allocated = BooleanProperty(label='is_allocated')
 
-    include = RelationshipTo("Material_Node", "INCLUDE_MATERIAL", model=Material_Include)
+    include_material = RelationshipTo("Material_Node", "RESERVED_MATERIAL", model=Material_Reserved)
 
-    include_truck = RelationshipTo("Truck_Node", "INCLUDE_TRUCK", model=Truck_Include)
+    include_truck = RelationshipTo("Truck_Node", "INCLUDE_TRUCK", model=Truck_Include, cardinality=ZeroOrMore)
+
+class Truck_Node(StructuredNode):
+    id = UniqueIdProperty()
+
+    licence = StringProperty(label='licence')
+
+    point = RelationshipFrom('Reserve_Point_Node', "INCLUDE_TRUCK", model=Truck_Include, cardinality=ZeroOrOne)
+
+
+

@@ -1,6 +1,9 @@
 useLogging: True
 logfile: 'logging.log'
 loglevel: 'DEBUG'
+
+database_connect_type: 'remote'
+
 mysql:
   user: awen
   password: '123456'
@@ -12,17 +15,39 @@ mysql:
   maxsize: 10
   minsize: 1
 
-neo4j:
-  DATABASE_URL: 'bolt://neo4j:zaw1219..@114.213.213.163:7687'
 
-sqlalchemy:
-  url: 'mysql+pymysql://awen:123456@114.213.213.163/DispatchDatabase?charset=utf8mb4'
-  echo: True
-  pool_size: 10
-  max_overflow: 10
-  connect_args: {'connect_timeout': 10}
+local:
+  neo4j:
+    DATABASE_URL: 'bolt://neo4j:123456@127.0.0.1:7687'
+
+  sqlalchemy:
+    url: 'mysql+pymysql://awen:123456@127.0.0.1/DispatchDatabase?charset=utf8mb4'
+    echo: True
+    pool_size: 10
+    max_overflow: 10
+    connect_args: {'connect_timeout': 10}
+remote:
+  neo4j:
+    DATABASE_URL: 'bolt://neo4j:zaw1219..@114.213.213.163:7687'
+
+  sqlalchemy:
+    url: 'mysql+pymysql://awen:123456@114.213.213.163/DispatchDatabase?charset=utf8mb4'
+    echo: True
+    pool_size: 10
+    max_overflow: 10
+    connect_args: {'connect_timeout': 10}
 
 
 model:
   name: 'material_matching'
+  replay_memory_size: 30000
+  save_interval: 1000
+  epochs: 3000
+  num_decay_epochs: 2000
+  final_epsilon: 1e-3
+  initial_epsilon: 1.0
+  gamma: 0.99
+  lr: 1e-3
+  batch_size: 512
+  save_path: 'resource/trained_models/'
 

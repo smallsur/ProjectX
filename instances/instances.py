@@ -1,6 +1,6 @@
 from sqlalchemy.ext.declarative import declarative_base
 
-from sqlalchemy import Column, Integer, String, DateTime, FLOAT, SMALLINT, ForeignKey, BOOLEAN
+from sqlalchemy import Column, Integer, String, DateTime, FLOAT, SMALLINT, ForeignKey, BOOLEAN, Text
 from sqlalchemy.orm import relationship
 
 ModelBase = declarative_base()
@@ -32,46 +32,18 @@ class Material(ModelBase):
 
     name = Column('name', String(length=20))
 
-    weight_lower = Column('weight_limit_lower', FLOAT)
-    weight_upper = Column('weight_limit_upper', FLOAT)
+    weight = Column('weight', FLOAT)
 
-    height_upper = Column('height_limit_upper', FLOAT)
-    height_lower = Column('height_limit_lower', FLOAT)
+    height = Column('height', FLOAT)
 
-    width_upper = Column('width_limit_upper', FLOAT)
-    width_lower = Column('width_limit_lower', FLOAT)
+    width = Column('width', FLOAT)
 
-    length_upper = Column('length_limit_upper', FLOAT)
-    length_lower = Column('length_limit_lower', FLOAT)
+    length = Column('length', FLOAT)
 
     code = Column('code', Integer, ForeignKey("table_material_standard.minor_category_code"))
 
     classification = relationship("Material_Standard", back_populates='fine_material')
 
-
-class District(ModelBase):
-    __tablename__ = 'table_district'
-
-    id = Column('id', SMALLINT, primary_key=True)
-    name = Column('name', String(length=270))
-    parent_id = Column('parent_id', SMALLINT)
-
-    initial = Column('initial', String(length=3))  # 拼音首字母
-    initials = Column('initials', String(length=10))  # 拼音首字母集合
-    pinyin = Column('pinyin', String(length=30))  # 拼音
-
-    extra = Column('extra', String(length=60))  # 附加说明
-
-    suffix = Column('suffix', String(length=15))  # 行政级别
-    code = Column('code', String(length=30))  # 行政代码
-    area_code = Column('area_code', String(length=30))  # 区号
-
-    order = Column('order', SMALLINT)  # 排序
-
-    reserve_point = relationship("Reserve_Point", back_populates='district')
-
-    def __repr__(self):
-        return "District id:%d, name:%s " % (self.id, self.name)
 
 
 class Truck(ModelBase):
@@ -144,8 +116,24 @@ class Reserve_Point(ModelBase):
     longitude = Column('longitude', FLOAT, nullable=True)
     latitude = Column('latitude', FLOAT, nullable=True)
 
-    district_id = Column('district_id', SMALLINT, ForeignKey("table_district.id"), nullable=False)
+    district_id = Column('district_id', SMALLINT, ForeignKey("table_district_standard.id"), nullable=False)
 
     allocated = Column('allocated', BOOLEAN)
 
-    district = relationship("District", back_populates='reserve_point')
+    district = relationship("District_Standard", back_populates='reserve_point')
+
+
+class District_Standard(ModelBase):
+    __tablename__ = 'table_district_standard'
+
+    id = Column('id', SMALLINT, primary_key=True)
+    name = Column('name', String(length=270))
+    parent_id = Column('parent_id', SMALLINT, ForeignKey('table_district_standard.id'))
+
+    adcode = Column('adcode', Integer)
+    citycode = Column('citycode', Integer)
+    center = Column('center', String(length=50))
+    level = Column('level', String(length=20))
+    polyline = Column('polyline', Text)
+    reserve_point = relationship("Reserve_Point", back_populates='district')
+    child  = relationship("District_Standard")#subquery,select,lazy='joined'

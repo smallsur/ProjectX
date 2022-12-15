@@ -1,7 +1,9 @@
 import config
 import neomodel
 
-url = getattr(getattr(config.cfg, 'neo4j'), 'DATABASE_URL', None)
+_type = getattr(config.cfg, 'database_connect_type')
+database_config = getattr(config.cfg, _type)
+url = getattr(getattr(database_config, 'neo4j'), 'DATABASE_URL', None)
 
 if url is not None:
     neomodel.config.DATABASE_URL = url

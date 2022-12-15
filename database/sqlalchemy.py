@@ -10,9 +10,11 @@ TEXT_DB = {'url': 'mysql+pymysql://awen:123456@121.5.62.4/DispatchDatabase?chars
             'pool_size': 10,
             'max_overflow': 10, 'connect_args':{'connect_timeout': 10}}
 
+_type = getattr(config.cfg, 'database_connect_type')
+database_config = getattr(config.cfg, _type)
 
 for k, v in TEXT_DB.items():
-    c = getattr(config.cfg, 'sqlalchemy',None)
+    c = getattr(database_config, 'sqlalchemy', None)
     if c is not None:
         TEXT_DB[k] = getattr(c, k)
 

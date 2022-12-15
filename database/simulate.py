@@ -9,8 +9,9 @@ from utils import get_log_format
 
 from .sqlalchemy import get_session
 from .graphdb import url
-from instances import (District, District_Node, Reserve_Point, Reserve_Point_Node,
-                       Material_Standard, Material, Material_Node)
+from instances import (Truck_Driver, Truck, District_Node, District_Standard, Material, 
+                        Material_Node, Material_Reserved, Material_Standard, Material_Standard_Node, 
+                        Reserve_Point, Reserve_Point_Node)
 
 
 _logger = logging.getLogger(__name__)
@@ -19,22 +20,4 @@ _handler = logging.StreamHandler(stream=sys.stdout)
 _handler.setFormatter(logging.Formatter(get_log_format(thread_info=True)))
 _logger.addHandler(_handler)
 
-def getdistrict_by_name(name:str):
-    with get_session() as s:
-        sql = select(District).where(District.name==name)
-        rs = s.execute(sql).scalars().all()
-        print(rs)
-    if len(rs) > 0:
-        return rs[0]
-    return None
 
-
-@db.transaction
-def simulate_one_district(name:str):
-    district_main = getdistrict_by_name(name=name)
-    
-
-
-@db.transaction
-def simulate_one_reserve_point():
-    pass
