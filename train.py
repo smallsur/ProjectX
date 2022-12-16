@@ -37,7 +37,7 @@ _logger.addHandler(_handler)
 
 if __name__=='__main__':
 
-    model = Client().to(device=device)
+    model = Client(1, 4).to(device=device)
 
     env = Environment(memory_max_len=modelcfg.replay_memory_size)
 
@@ -47,7 +47,7 @@ if __name__=='__main__':
 
     epoch = 0
     while epoch < modelcfg.epochs:
-
+        
         epsilon = modelcfg.final_epsilon + (max(modelcfg.num_decay_epochs - epoch, 0) * (
             modelcfg.initial_epsilon - modelcfg.final_epsilon) / modelcfg.num_decay_epochs)
         
