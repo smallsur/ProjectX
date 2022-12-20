@@ -2,8 +2,8 @@ import torch
 import torch.nn as nn
 
 class ThreeD_Net(nn.Module):
-    conv_midden_dim = [64, 128]
-    fc_midden_dim = [256, ]
+    conv_midden_dim = [8, 16]
+    fc_midden_dim = [64, ]
     def __init__(self, input_channel, state_dim, bias = True, dropout = 0.1):
         super(ThreeD_Net, self).__init__()
 
@@ -12,15 +12,15 @@ class ThreeD_Net(nn.Module):
         self.bn1 = nn.BatchNorm3d(self.conv_midden_dim[0])
         self.relu = nn.ReLU(inplace=True)
 
-        self.conv2 = nn.Conv3d(in_channels=self.conv_midden_dim[0], out_channels=self.fc_midden_dim[-1], kernel_size=1, 
+        self.conv2 = nn.Conv3d(in_channels=self.conv_midden_dim[0], out_channels=self.conv_midden_dim[1], kernel_size=1, 
                                 stride=(2, 2, 2), bias=bias)
         self.bn2 = nn.BatchNorm3d(self.conv_midden_dim[1])
 
-        self.avgpool = nn.AdaptiveAvgPool3d(1, 1, 1)
+        self.avgpool = nn.AdaptiveAvgPool3d((1, 1, 1))
 
         self.fc1 = nn.Linear(in_features=state_dim, out_features=self.fc_midden_dim[-1], bias=bias)
 
-        self.fc2 = nn.Linear(in_features=self.fc_midden_dim[-1] * 2, out_features=self.fc_midden_dim[-1], bias=bias)
+        self.fc2 = nn.Linear(in_features=self.fc_midden_dim[-1] + self.conv_midden_dim[1], out_features=self.fc_midden_dim[-1], bias=bias)
         self.fc3 = nn.Linear(in_features=self.fc_midden_dim[-1], out_features=1, bias=bias)
         
         self.dropout = nn.Dropout(dropout)
@@ -41,6 +41,7 @@ class ThreeD_Net(nn.Module):
                 nn.init.constant_(m.bias, 0)
 
     def forward(self, x, state):
+        bs = x.shape[0]
         out = self.conv1(x)
         out = self.dropout(self.bn1(out))
         out = self.relu(out)
@@ -48,11 +49,13 @@ class ThreeD_Net(nn.Module):
         out = self.conv2(out)
         out = self.dropout(self.bn2(out))
         out = self.relu(out)
-
+        out = self.avgpool(out).view(bs, self.conv_midden_dim[1])
+        
         state = self.fc1(state)
         state = self.dropout(state)
         state = self.relu(state)
 
+        
         out = torch.concat([out, state], dim=-1)
         out = self.relu(out)
 
@@ -62,5 +65,6 @@ class ThreeD_Net(nn.Module):
         out = self.fc3(out)
         
         return out
+    
 
 

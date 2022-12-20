@@ -44,10 +44,10 @@ model:
   save_interval: 1000
   epochs: 3000
   num_decay_epochs: 2000
-  final_epsilon: 1e-3
+  final_epsilon: 0.001
   initial_epsilon: 1.0
   gamma: 0.99
-  lr: 1e-3
+  lr: 0.001
   batch_size: 512
   save_path: 'resource/trained_models/'
 
