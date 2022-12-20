@@ -178,7 +178,7 @@ class Environment:
         return new_state
     
     def step(self,  state):
-        self.state_box[:] = state['state'][:]
+        self.state_box[:] = state['state'].cpu()[:]
         self.game_over = state['gameover']
         
         score = 1 + (state['properties'][0] ** 2) * 10
