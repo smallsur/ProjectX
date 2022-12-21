@@ -75,14 +75,14 @@ if __name__=='__main__':
             predictions = model(next_properties)
         
         model.train()
-        
+
         if random_action:
             index = random.randint(0, len(next_steps) - 1)
         else:
             index = torch.argmax(predictions, dim=0)
         
-        next_state = next_states[index].to(device=device)
-        next_property = next_properties[index].to(device=device)
+        next_state = next_states[index].squeeze(0).to(device=device)
+        next_property = next_properties[index].squeeze(0).to(device=device)
         action = next_actions[index]
         done = next_dones[index]
         
@@ -91,13 +91,13 @@ if __name__=='__main__':
         next_ = next_property
         replay_memory.append([state, reward, next_, done])
         count += 1
-        print(count)
+        # print(count)
         if done:
             final_score = env.score
             final_count_step = env.step_count
             final_count_line = env.lines_count
             
-            state = [t.to(device=device) for t in env.reset_state()]
+            state = env.reset_state().to(device=device)
         else:
             state = next_
             continue
@@ -106,23 +106,23 @@ if __name__=='__main__':
         
         epoch +=1
         
-        batch = random.sample(replay_memory, min(len(replay_memory), model.batch_size))
+        batch = random.sample(replay_memory, min(len(replay_memory), modelcfg.batch_size))
         
         state_batch, reward_batch, next_state_batch, done_batch = zip(*batch)
         
-        state_batch, property_batch = zip(*state_batch)
-        next_state_batch, next_property_batch = zip(*next_state_batch)
+        # state_batch, property_batch = zip(*state_batch)
+        # next_state_batch, next_property_batch = zip(*next_state_batch)
         
-        reward_batch = torch.from_numpy(np.array(reward_batch, dtype=np.float32))
+        reward_batch = torch.from_numpy(np.array(reward_batch, dtype=np.float32))[:,None]
         next_state_batch = torch.stack(next_state_batch)
-        next_property_batch = torch.stack(next_property_batch)
+        # next_property_batch = torch.stack(next_property_batch)
         state_batch = torch.stack(state_batch)
-        property_batch = torch.stack(property_batch)
-        q_values = model(property_batch)
-        
+        # property_batch = torch.stack(property_batch)
+        # q_values = model(property_batch)
+        q_values = model(state_batch)
         model.eval()
         with torch.no_grad():
-            next_prediction_batch = model(next_property_batch)
+            next_prediction_batch = model(next_state_batch)
             
         model.train()
         
@@ -140,22 +140,23 @@ if __name__=='__main__':
             final_score,
             final_count_step,
             final_count_line))
+        
         ###############eval###############
         eval_done = False
         while not eval_done:
-            eval_next_steps = env.pre_step()
+            eval_next_steps = env.pre_step(eval=True)
             eval_next_actions, eval_next_states = zip(*eval_next_steps.items())
             eval_next_properties, eval_next_states, eval_next_dones = zip(*eval_next_states)
             eval_next_properties = torch.stack(eval_next_properties).to(device=device)
             eval_next_states = torch.stack(eval_next_states).to(device=device)
-                  
+
             model.eval()
             with torch.no_grad():
                 eval_predictions = model(eval_next_properties)
-            index = torch.argmax(predictions, dim=0)
-            
-            eval_next_state = eval_next_states[index].to(device=device)
-            eval_next_property = eval_next_properties[index].to(device=device)
+            index = torch.argmax(eval_predictions, dim=0)
+
+            eval_next_state = eval_next_states[index].squeeze(0).to(device=device)
+            eval_next_property = eval_next_properties[index].squeeze(0).to(device=device)
             eval_action = eval_next_actions[index]
             eval_done = eval_next_dones[index]
             

@@ -100,7 +100,8 @@ def get_state(box_state, eval=False):
     
     return torch.FloatTensor([num_lines, num_holes, diff_x, diff_y, sum])
 
-
+# def get_state_detail(box_state, eval=False):
+    
 
 ###############################################################################
 
@@ -143,6 +144,7 @@ class Environment:
 
     def rotate_material(self, material):
         return set(itertools.permutations(material))
+    
     @run_time
     def pre_step(self, eval=False):
         states = {}
@@ -208,14 +210,15 @@ class Environment:
         self.state_box[:] = state['state'].cpu()[:]
         self.game_over = state['gameover']
         
-        score = 1 + (state['properties'][0] ** 2) * 10
+        score = 1 + (state['properties'].cpu()[0].item() ** 2) * 10
         self.score += score
         
         self.step_count += 1
         
-        self.lines_count += state['properties'][0]
+        self.lines_count += state['properties'].cpu()[0].item()
         
         if self.game_over:
             self.score -= 2
+            score -= 2
             
         return score
