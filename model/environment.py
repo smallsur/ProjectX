@@ -22,20 +22,26 @@ def clear_lines(box_state, lines):
     '''clear lines in box, and fill zero to box'''
     box_state = np.delete(box_state, lines, axis=2)   
     box_state = np.insert(box_state, [0 for i in range(len(lines))], values=0, axis=2)
-        
     return box_state
 
 def get_cleared_lines(box_state, eval=False):
     '''get clear line count,and the new box state'''
+    length, width, height = box_state.shape
     count = 0
-    _, _, height = box_state.shape
     lines = []
+    # _state = box_state != 0
+    # _lines_full = np.sum(_state, axis=(0,1)) == length * width
+    # count = np.sum(_lines_full)
+    # if not eval:
+    #     lines = np.arange(0, height)[_lines_full]
+
     for i in range(height):
         if np.all(box_state[:, :, i] != 0):
             count =count + 1
-            lines.append(i)
-    if not eval:
-        box_state = clear_lines(box_state, lines)
+            if not eval:
+                lines.append(i)
+
+    box_state = clear_lines(box_state, lines)        
     return count, box_state
 
 def get_holes(box_state):
@@ -67,12 +73,30 @@ def get_sum_height(box_state):
 
     return diffs_x, diffs_y, total_height
 
+def get_holes_and_height(box_state):
+    height = box_state.shape[-1]
+    mask = box_state != 0
+    invert_heights = np.where(mask.any(axis=2), np.argmax(mask, axis=2), height)
+    heights = height - invert_heights
+    
+    holes_count = heights - np.sum(mask, axis=2)
+    holes_count = np.sum(holes_count)
+    
+    total_height = np.sum(heights)
+    currs_x = heights[:-1]
+    nexts_x = heights[1:]
+    diffs_x = np.sum(np.abs(currs_x - nexts_x))
+    currs_y = heights[:, :-1]
+    nexts_y = heights[:, 1:]
+    diffs_y = np.sum(np.abs(currs_y - nexts_y))
+    
+    return holes_count, diffs_x, diffs_y, total_height
+
 def get_state(box_state, eval=False):
 
-    num_lines, box_state=get_cleared_lines(box_state, eval)
+    num_lines, box_state = get_cleared_lines(box_state, eval)
 
-    num_holes = get_holes(box_state)
-    diff_x, diff_y, sum = get_sum_height(box_state)
+    num_holes, diff_x, diff_y, sum= get_holes_and_height(box_state)
     
     return torch.FloatTensor([num_lines, num_holes, diff_x, diff_y, sum])
 
@@ -113,7 +137,7 @@ class Environment:
         self.step_count = 0
         self.lines_count = 0
         
-        return [torch.FloatTensor(self.state_box.copy()), get_state(self.state_box)]
+        return get_state(self.state_box)
         
  
 
@@ -129,23 +153,23 @@ class Environment:
         for i, s in enumerate(self.rotate_material(cur_material)):
             vaildx = length - s[0]
             vaildy = width - s[1]
-            
+
             for x in range(vaildx + 1):
                 for y in range(vaildy + 1):
-                    pos = {'x':x, 'y':y, 'z':0}
-                    _state = self.state_box[pos['x']:pos['x']+s[0], pos['y']:pos['y']+s[1]]
+                    pos = {'x':x, 'y':y, 'z':-1}
+                    # _state = self.state_box[pos['x']:pos['x']+s[0], pos['y']:pos['y']+s[1]]
                     # _state = _state !=0
-                    _state = np.argmax(_state, axis=2)
-                    pos['y'] = np.min(_state) - 1
-                    # while pos['z'] < height - 1 and not self.check_collision(pos, s):
-                    #     pos['z'] = pos['z'] + 1
+                    # _state = np.argmax(_state, axis=2)
+                    # pos['z'] = np.min(_state) - 1
+                    while pos['z'] < height -1 and not self.check_collision(pos, s):
+                        pos['z'] = pos['z'] + 1
                     done = self.check_gameover(pos, s)
                     
                     new_state = self.next_box_state(pos, s, done)
              
                     properties = get_state(new_state, eval)
                     states[(x, y, i)] = [properties, torch.FloatTensor(new_state), done]
-                    # print("%d-%d"%(x, y))       
+                    # print("%d-%d"%(x, y))
         return states
     
     def get_next_material(self):
@@ -159,14 +183,14 @@ class Environment:
         length, width, _ = material_shape
         for x in range(length):
             for y in range(width):
-                if self.state_box[x + pos['x'], y + pos['y'], pos['z']] != 0:
+                if self.state_box[x + pos['x'], y + pos['y'], pos['z'] + 1] != 0:
                     return True
         return False
     
     def check_gameover(self, pos, material_shape):
         _, _, height = material_shape
         
-        if height <= pos['z']+1:
+        if pos['z'] != -1 and height <= pos['z']+1:
             return False
         
         return True
@@ -179,7 +203,7 @@ class Environment:
             new_state[pos['x']:pos['x'] + material_shape[0], pos['y']:pos['y'] + material_shape[1], :pos['z']+1] = 1
         
         return new_state
-    
+
     def step(self,  state):
         self.state_box[:] = state['state'].cpu()[:]
         self.game_over = state['gameover']

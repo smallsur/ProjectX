@@ -50,4 +50,5 @@ model:
   lr: 0.001
   batch_size: 512
   save_path: 'resource/trained_models/'
+  gpu_id: 1
 

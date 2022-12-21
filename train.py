@@ -11,20 +11,23 @@ import config
 from model import Client, Environment, DeepQNetwork
 from utils import get_log_format
 
+modelcfg = getattr(config.cfg, 'model')
 
 #device
 device = torch.device('cpu')
 #seed
 if torch.cuda.is_available():
     torch.cuda.manual_seed(3407)
+    torch.cuda.set_device(modelcfg.gpu_id)
     device = torch.device('cuda') 
+    
 else:
     torch.manual_seed(3407)
 random.seed(3407)
 np.random.seed(3407)
 
 #model
-modelcfg = getattr(config.cfg, 'model')
+
 
 #log
 _logger = logging.getLogger(__name__)
@@ -37,14 +40,14 @@ _logger.addHandler(_handler)
 
 if __name__=='__main__':
 
-    model = Client(1, 5).to(device=device)
+    model = DeepQNetwork().to(device=device)
 
     env = Environment()
     
     optimizer = torch.optim.Adam(model.parameters(), lr=modelcfg.lr)
     criterion = nn.MSELoss()
 
-    state = [t.to(device=device) for t in env.reset_state()]
+    state = env.reset_state().to(device=device)
     
     replay_memory = deque(maxlen=modelcfg.replay_memory_size)
     
@@ -52,7 +55,7 @@ if __name__=='__main__':
     count = 0
     while epoch < modelcfg.epochs:
         next_steps = env.pre_step()
-        
+
         epsilon = modelcfg.final_epsilon + (max(modelcfg.num_decay_epochs - epoch, 0) * (
             modelcfg.initial_epsilon - modelcfg.final_epsilon) / modelcfg.num_decay_epochs)
         
@@ -69,7 +72,7 @@ if __name__=='__main__':
         model.eval()
         
         with torch.no_grad():
-            predictions = model(next_states.unsqueeze(1), next_properties)
+            predictions = model(next_properties)
         
         model.train()
         
@@ -85,7 +88,7 @@ if __name__=='__main__':
         
         reward = env.step({'properties':next_property, 'state':next_state, 'gameover':done})
         
-        next_ = [next_state, next_property]
+        next_ = next_property
         replay_memory.append([state, reward, next_, done])
         count += 1
         print(count)
@@ -115,11 +118,11 @@ if __name__=='__main__':
         next_property_batch = torch.stack(next_property_batch)
         state_batch = torch.stack(state_batch)
         property_batch = torch.stack(property_batch)
-        q_values = model(state_batch.unsqueeze(1), property_batch)
+        q_values = model(property_batch)
         
         model.eval()
         with torch.no_grad():
-            next_prediction_batch = model(next_state_batch.unsqueeze(1), next_property_batch)
+            next_prediction_batch = model(next_property_batch)
             
         model.train()
         
@@ -148,7 +151,7 @@ if __name__=='__main__':
                   
             model.eval()
             with torch.no_grad():
-                eval_predictions = model(eval_next_states.unsqueeze(1), eval_next_properties)
+                eval_predictions = model(eval_next_properties)
             index = torch.argmax(predictions, dim=0)
             
             eval_next_state = eval_next_states[index].to(device=device)
@@ -167,7 +170,7 @@ if __name__=='__main__':
             env.step_count,
             env.lines_count, 
             capacity))
-        state = [t.to(device=device) for t in env.reset_state()]  
+        state = env.reset_state().to(device=device)
             
         if epoch > 0 and epoch % modelcfg.save_interval == 0:
             torch.save(model, "{}/tetris_{}".format(modelcfg.save_path, epoch))
