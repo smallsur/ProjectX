@@ -8,7 +8,7 @@ import numpy as np
 from collections import deque
 import config
 
-from model import Client, Environment
+from model import Client, Environment, DeepQNetwork
 from utils import get_log_format
 
 
@@ -95,7 +95,6 @@ if __name__=='__main__':
             final_count_line = env.lines_count
             
             state = [t.to(device=device) for t in env.reset_state()]
-            
         else:
             state = next_
             continue

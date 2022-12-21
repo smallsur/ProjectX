@@ -3,7 +3,7 @@ import random
 import itertools
 import torch
 from collections import deque
-
+from utils import run_time
 
 box_shape = (15, 15, 15)
 
@@ -71,7 +71,6 @@ def get_state(box_state, eval=False):
 
     num_lines, box_state=get_cleared_lines(box_state, eval)
 
-    
     num_holes = get_holes(box_state)
     diff_x, diff_y, sum = get_sum_height(box_state)
     
@@ -120,7 +119,7 @@ class Environment:
 
     def rotate_material(self, material):
         return set(itertools.permutations(material))
-
+    @run_time
     def pre_step(self, eval=False):
         states = {}
         
@@ -134,8 +133,12 @@ class Environment:
             for x in range(vaildx + 1):
                 for y in range(vaildy + 1):
                     pos = {'x':x, 'y':y, 'z':0}
-                    while pos['z'] < height - 1 and not self.check_collision(pos, s):
-                        pos['z'] = pos['z'] + 1
+                    _state = self.state_box[pos['x']:pos['x']+s[0], pos['y']:pos['y']+s[1]]
+                    # _state = _state !=0
+                    _state = np.argmax(_state, axis=2)
+                    pos['y'] = np.min(_state) - 1
+                    # while pos['z'] < height - 1 and not self.check_collision(pos, s):
+                    #     pos['z'] = pos['z'] + 1
                     done = self.check_gameover(pos, s)
                     
                     new_state = self.next_box_state(pos, s, done)
