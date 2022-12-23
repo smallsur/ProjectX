@@ -96,7 +96,7 @@ if __name__=='__main__':
             final_score = env.score
             final_count_step = env.step_count
             final_count_line = env.lines_count
-            
+            print('step')
             state = env.reset_state().to(device=device)
         else:
             state = next_
@@ -113,7 +113,7 @@ if __name__=='__main__':
         # state_batch, property_batch = zip(*state_batch)
         # next_state_batch, next_property_batch = zip(*next_state_batch)
         
-        reward_batch = torch.from_numpy(np.array(reward_batch, dtype=np.float32))[:,None]
+        reward_batch = torch.from_numpy(np.array(reward_batch, dtype=np.float32))[:,None].to(device=device)
         next_state_batch = torch.stack(next_state_batch)
         # next_property_batch = torch.stack(next_property_batch)
         state_batch = torch.stack(state_batch)
@@ -173,8 +173,8 @@ if __name__=='__main__':
             capacity))
         state = env.reset_state().to(device=device)
             
-        if epoch > 0 and epoch % modelcfg.save_interval == 0:
-            torch.save(model, "{}/tetris_{}".format(modelcfg.save_path, epoch))
+        # if epoch > 0 and epoch % modelcfg.save_interval == 0:
+        #     torch.save(model, "{}/tetris_{}".format(modelcfg.save_path, epoch))
         
         
         

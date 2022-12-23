@@ -145,7 +145,7 @@ class Environment:
     def rotate_material(self, material):
         return set(itertools.permutations(material))
     
-    @run_time
+    # @run_time
     def pre_step(self, eval=False):
         states = {}
         
