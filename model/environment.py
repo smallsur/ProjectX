@@ -16,92 +16,58 @@ materials_shape =  [[1, 1, 1],[1, 1, 2],[1, 1, 3],[1, 1, 4],[1, 1, 5],
                     [3, 3, 3],[3, 3, 4],[3, 3, 5],[3, 4, 4],[3, 4, 5],
                     [3, 5, 5],[4, 4, 4],[4, 4, 5],[4, 5, 5],[5, 5, 5]]
 
+clear_threshold = 0.5
+
+discount = 0.1
+
+# clear_max_reward = 
 # materials_weight = [sum(m) for m in materials_shape]
 ###############################################################################
 def clear_lines(box_state, lines):
     '''clear lines in box, and fill zero to box'''
-    box_state = np.delete(box_state, lines, axis=2)   
+    if len(lines) == 0:
+        return box_state
+    box_state = np.delete(box_state, lines, axis=2)
     box_state = np.insert(box_state, [0 for i in range(len(lines))], values=0, axis=2)
     return box_state
 
 def get_cleared_lines(box_state, eval=False):
     '''get clear line count,and the new box state'''
     length, width, height = box_state.shape
-    count = 0
-    lines = []
-    # _state = box_state != 0
-    # _lines_full = np.sum(_state, axis=(0,1)) == length * width
-    # count = np.sum(_lines_full)
-    # if not eval:
-    #     lines = np.arange(0, height)[_lines_full]
-
-    for i in range(height):
-        if np.all(box_state[:, :, i] != 0):
-            count =count + 1
-            if not eval:
-                lines.append(i)
-
+    _state = box_state != 0
+    _lines = np.sum(_state, axis=(0,1))
+    _line_full = np.full_like(_lines, fill_value=length * width)
+    
+    capacities = _lines / _line_full
+    
+    index = capacities > clear_threshold
+    lines = np.argwhere(index).reshape(-1)
+    capacities = capacities[index]
+    if eval:
+        lines = []
     box_state = clear_lines(box_state, lines)        
-    return count, box_state
+    return capacities, box_state
 
-def get_holes(box_state):
-    count = 0
-    length, width, height = box_state.shape
-    for x in  range(length):
-        for y in range(width):
-            idx = 0
-            while idx < height and box_state[x, y, idx] == 0:
-                idx += 1
-            while idx < height:
-                if box_state[x, y, idx] == 0:
-                    count += 1
-                idx +=1         
-    return count
-
-def get_sum_height(box_state):
-    height = box_state.shape[-1]
-    mask = box_state != 0
-    invert_heights = np.where(mask.any(axis=2), np.argmax(mask, axis=2), height)
-    heights = height - invert_heights
-    total_height = np.sum(heights)
-    currs_x = heights[:-1]
-    nexts_x = heights[1:]
-    diffs_x = np.sum(np.abs(currs_x - nexts_x))
-    currs_y = heights[:, :-1]
-    nexts_y = heights[:, 1:]
-    diffs_y = np.sum(np.abs(currs_y - nexts_y))
-
-    return diffs_x, diffs_y, total_height
-
-def get_holes_and_height(box_state):
+def get_height_with_holes(box_state):
     height = box_state.shape[-1]
     mask = box_state != 0
     invert_heights = np.where(mask.any(axis=2), np.argmax(mask, axis=2), height)
     heights = height - invert_heights
     
-    holes_count = heights - np.sum(mask, axis=2)
-    holes_count = np.sum(holes_count)
+    holes = heights - np.sum(mask, axis=2)
     
-    total_height = np.sum(heights)
-    currs_x = heights[:-1]
-    nexts_x = heights[1:]
-    diffs_x = np.sum(np.abs(currs_x - nexts_x))
-    currs_y = heights[:, :-1]
-    nexts_y = heights[:, 1:]
-    diffs_y = np.sum(np.abs(currs_y - nexts_y))
-    
-    return holes_count, diffs_x, diffs_y, total_height
+    return np.stack([heights, holes])
+
+
 
 def get_state(box_state, eval=False):
 
-    num_lines, box_state = get_cleared_lines(box_state, eval)
+    capacities, box_state = get_cleared_lines(box_state, eval)
 
-    num_holes, diff_x, diff_y, sum= get_holes_and_height(box_state)
+    diff = get_height_with_holes(box_state)
     
-    return torch.FloatTensor([num_lines, num_holes, diff_x, diff_y, sum])
+    return torch.FloatTensor(diff), capacities, box_state.copy()
 
-# def get_state_detail(box_state, eval=False):
-    
 
 ###############################################################################
 
@@ -130,7 +96,7 @@ class Environment:
         random.shuffle(match_candicates)
 
         return match_candicates
-    
+
     def reset_state(self):
         self.state_box[:] = 0.0
         self.game_over = False
@@ -139,7 +105,7 @@ class Environment:
         self.lines_count = 0
         
         return get_state(self.state_box)
-        
+
  
 
     def rotate_material(self, material):
@@ -159,19 +125,16 @@ class Environment:
             for x in range(vaildx + 1):
                 for y in range(vaildy + 1):
                     pos = {'x':x, 'y':y, 'z':-1}
-                    # _state = self.state_box[pos['x']:pos['x']+s[0], pos['y']:pos['y']+s[1]]
-                    # _state = _state !=0
-                    # _state = np.argmax(_state, axis=2)
-                    # pos['z'] = np.min(_state) - 1
+                    
                     while pos['z'] < height -1 and not self.check_collision(pos, s):
                         pos['z'] = pos['z'] + 1
                     done = self.check_gameover(pos, s)
                     
                     new_state = self.next_box_state(pos, s, done)
-             
-                    properties = get_state(new_state, eval)
-                    states[(x, y, i)] = [properties, torch.FloatTensor(new_state), done]
-                    # print("%d-%d"%(x, y))
+
+                    diff, capacities, new_state = get_state(new_state, eval)
+
+                    states[(x, y, i)] = [diff, capacities, new_state, done]
         return states
     
     def get_next_material(self):
@@ -206,19 +169,23 @@ class Environment:
         
         return new_state
 
-    def step(self,  state):
-        self.state_box[:] = state['state'].cpu()[:]
-        self.game_over = state['gameover']
+    def step(self, capacity, state,  done):
+        self.state_box[:] = state[:]
+        self.game_over = done
         
-        score = 1 + (state['properties'].cpu()[0].item() ** 2) * 10
+        score = 1
+        count = len(capacity)
+        
+        for c in capacity:
+            score += (count ** 2) * (c-discount)
+            
         self.score += score
         
         self.step_count += 1
         
-        self.lines_count += state['properties'].cpu()[0].item()
+        self.lines_count += count
         
         if self.game_over:
             self.score -= 2
-            score -= 2
             
         return score
