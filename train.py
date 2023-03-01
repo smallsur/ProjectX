@@ -4,10 +4,9 @@ import random
 import torch
 import torch.nn as nn
 import numpy as np
-
 from collections import deque
-import config
 
+import config
 from model import Client, Environment, DeepQNetwork_Two
 from utils import get_log_format
 
