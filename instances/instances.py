@@ -123,6 +123,7 @@ class Reserve_Point(ModelBase):
     district = relationship("District_Standard", back_populates='reserve_point')
 
 
+
 class District_Standard(ModelBase):
     __tablename__ = 'table_district_standard'
 

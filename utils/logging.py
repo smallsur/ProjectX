@@ -1,5 +1,4 @@
 
-
 def get_log_format(process_info=False, thread_info=False):
 
     _format = '%(asctime)s - %(name)s - %(levelname)s - %(funcName)s - %(message)s'
