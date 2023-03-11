@@ -132,9 +132,16 @@ def is_Done(state, cargo):
     l, w, h = state.shape
     cargo_l, cargo_w, cargo_h = cargo['length'], cargo['width'], cargo['height']
     
-    for i in range(1, l+1-cargo_l):
-        for j in range(1, w+1-cargo_w):
-            for k in range(1, h+1-cargo_h):
+    # for i in range(0, l+1-cargo_l):
+    #     for j in range(0, w+1-cargo_w):
+    #         for k in range(0, h+1-cargo_h):
+    #             if state[i:i+cargo_l, j:j+cargo_w, k:k+cargo_h].sum()==0:
+    #                 state[i:i+cargo_l, j:j+cargo_w, k:k+cargo_h] = 1
+    #                 return state, (i, j, k), False
+    
+    for k in range(0, h+1-cargo_h):
+        for j in range(0, w+1-cargo_w):
+            for i in range(0, l+1-cargo_l):
                 if state[i:i+cargo_l, j:j+cargo_w, k:k+cargo_h].sum()==0:
                     state[i:i+cargo_l, j:j+cargo_w, k:k+cargo_h] = 1
                     return state, (i, j, k), False
@@ -156,23 +163,28 @@ def match_trucks_with_cargos(trucks, cargos):
     # dp[i][j] 表示考虑前 i 个货车和前 j 个货物，能够装载的最大重量
     dp = np.zeros(shape=(len(trucks) + 1, len(cargos) + 1))
     cargoLocations = np.zeros(shape=(len(trucks) + 1, len(cargos) + 1, 3))
+    cargoLocations[:]=-1
     truckStates = [np.zeros(shape=(truck['length'], truck['width'], truck['height'])) for truck in trucks]
     
+    cargoStates = np.zeros(shape=(len(cargos)))
 
     # 逐个考虑每个货车和货物
     for i in range(1, len(trucks) + 1):
         for j in range(1, len(cargos) + 1):
             # 如果当前货车能够装载当前货物，则需要比较选和不选两种情况
+            if cargoStates[j-1]==1:
+                continue
             state, coordinate, Done = is_Done(truckStates[i-1], cargos[j-1])
             if ( not Done and
                 trucks[i - 1]['load_capacity'] >= cargos[j - 1]['weight']):
                 # 如果选当前货物，则装载重量增加 cargos[j-1]['weight']
                 dp[i][j] = max(dp[i][j-1] + cargos[j-1]['weight'], dp[i][j-1])
                 cargoLocations[i][j] = coordinate
+                cargoStates[j-1] = 1
             else:
                 # 如果不选当前货物，则只能选择前面的货物
                 dp[i][j] = dp[i][j-1]
-       
+  
     # 回溯得到匹配结果
     matchResults = []
     for i in range(1, len(trucks) + 1):
@@ -182,7 +194,7 @@ def match_trucks_with_cargos(trucks, cargos):
                 buf.append((cargoLocations[i][j][0], cargoLocations[i][j][1], cargoLocations[i][j][2], j))
         buf.append(dp[i][-1]/trucks[i-1]['load_capacity'])
         matchResults.append(buf)
-
-    return matchResults
+    
+    return matchResults, cargoStates.sum()/len(cargos)
 
 

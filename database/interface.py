@@ -8,7 +8,7 @@ from utils import get_log_format
 
 from .sqlalchemy import get_session
 from .graphdb import url
-from instances import (District, District_Node, Reserve_Point, Reserve_Point_Node,
+from instances import ( District_Node, Reserve_Point, Reserve_Point_Node,
                        Material_Standard, Material, Material_Node)
 
 _logger = logging.getLogger(__name__)
@@ -18,10 +18,10 @@ _handler.setFormatter(logging.Formatter(get_log_format(thread_info=True)))
 _logger.addHandler(_handler)
 
 
-def get_all_district():
-    with get_session() as s:
-        rs = s.query(District)
-    return rs
+# def get_all_district():
+#     with get_session() as s:
+#         rs = s.query(District)
+#     return rs
 
 
 def get_all_reserve_point():
@@ -39,19 +39,19 @@ def clear_graphdb():
     db.cypher_query(query='match (n) detach delete n', params=None)
 
 
-@db.transaction
-def create_or_update_district():
-    rs = get_all_district()
+# @db.transaction
+# def create_or_update_district():
+#     rs = get_all_district()
 
-    _logger.info('create or update district_node, running....')
-    district_nodes = []
-    for d in rs:
-        district_nodes.append({'district_id': d.id, 'name': d.name, 'suffix': d.suffix, 'parent_id': d.parent_id})
+#     _logger.info('create or update district_node, running....')
+#     district_nodes = []
+#     for d in rs:
+#         district_nodes.append({'district_id': d.id, 'name': d.name, 'suffix': d.suffix, 'parent_id': d.parent_id})
 
-    created_nodes = District_Node.create_or_update(*district_nodes, kwargs={})
-    _logger.info('create or update district_node completed! node_nums is %d' % len(created_nodes))
+#     created_nodes = District_Node.create_or_update(*district_nodes, kwargs={})
+#     _logger.info('create or update district_node completed! node_nums is %d' % len(created_nodes))
 
-    return created_nodes
+#     return created_nodes
 
 
 @db.transaction
